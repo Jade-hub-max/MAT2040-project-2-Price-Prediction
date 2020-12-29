@@ -1,0 +1,64 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forecast)
+# Retrieve the training data
+train.data = read.table("Part1_training_data.txt")[,1]
+train.ds = ts(train.data, frequency=length(train.data))
+# Retrieve the test data
+test.data = read.table("Part1_testing_data.txt")[,1]
+test.ds = ts(test.data, frequency=length(test.data))
+```
+
+```{r}
+# Fourier series
+F.bestfit <- list(aicc=Inf)
+F.bestpar <- 1
+for(i in (1:50)){
+  fit <- auto.arima(train.ds, xreg=fourier(train.ds, K=i), seasonal=FALSE)
+  par <- i
+  if(fit$aicc < F.bestfit$aicc){
+    F.bestfit <- fit
+    F.bestpar <- par
+  }
+  else break;
+}
+F.bestpar
+F.forecast <- forecast(F.bestfit, xreg=fourier(test.ds, K=F.bestpar), h=10)
+plot(F.forecast)
+F.pred = c()
+for (i in 1:200){
+  if (i%%2 != 0){
+    F.pred <- c(F.pred, F.forecast$fitted[i])
+  }
+}
+F.rse = sqrt(sum((F.pred-test.data)^2)/(length(F.pred)-2))
+F.rse
+```
+
+```{r}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
